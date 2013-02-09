@@ -11,6 +11,7 @@ dbname=$1
 dbuser=$2
 dbpass=$3
 dumpdir=$4
+keypath=$5
 
 # Check destination directory exists and is writable
 if ! [ -d "$dumpdir" ] || ! [ -w "$dumpdir" ]; then
@@ -44,4 +45,10 @@ mysqldump -u$dbuser -p$dbpass $dbname | gzip -c > $dumpfile
 if [ ${PIPESTATUS[0]} -ne 0 ]; then
 	echo "MySQL dump failed"
 	exit 1
+fi
+
+#Encrypt dump if public key is passed as argument
+if [ -n "$keypath" ]; then
+	openssl smime -encrypt -aes256 -in $dumpfile -binary -outform DEM -out "$dumpfile-ssl" $keypath
+#	rm $dumpfile
 fi

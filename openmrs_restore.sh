@@ -42,24 +42,40 @@ else
 	dbname="openmrs"
 fi
 
-while getopts “e:” OPTION
+#User warning and check
+echo "WARNING: This will import the dump file data to the database configured in openmrs-runtime.properties file."
+read -p "Are you sure you want to continue? <y/N> " prompt
+if [[ $prompt == "y" || $prompt == "Y" || $prompt == "yes" || $prompt == "Yes" ]]
+then
+  echo "Importing ....."
+else
+  exit 0
+fi
+
+while getopts “e:i:” OPTION
 do
      case $OPTION in
          e)
              keypath=$OPTARG
 	      ;;
+	  i)
+             backupfile=$OPTARG
+	      ;;	
      esac
 done	
 
-# Dump the database
-$SCRIPT_PATH/db_dump.sh $dbname $dbuser $dbpass $BACKUP_DEST_DIR $keypath
+#Decrypt backup
+openssl smime -decrypt -in $backupfile -binary -inform DEM -inkey $keypath -out "$BACKUP_DEST_DIR/kemr_restore.gz"
 
-# Check dump was successful
+# Restore the database
+echo "$BACKUP_DEST_DIR/kemr_restore"
+gunzip "$BACKUP_DEST_DIR/kemr_restore.gz"
+mysql -u$dbuser -p$dbpass $dbname < kemr_restore
+
+# Check restore was successful
 if [ $? -eq 0 ]; then
-	logger -t $LOGGING_TAG -p local0.info "Database dump successful"
+	logger -t $LOGGING_TAG -p local0.info "Database restore successful"
 else
-	fail "Unable to dump database (name=$dbname, user=$dbuser)"
+	fail "Unable to restore database (name=$dbname, user=$dbuser)"
 fi
 
-# Cleanup old dumps
-$SCRIPT_PATH/rotate.sh $DAILY_KEEP_DAYS $WEEKLY_KEEP_WEEKS $MONTHLY_KEEP_MONTHS $BACKUP_DEST_DIR
