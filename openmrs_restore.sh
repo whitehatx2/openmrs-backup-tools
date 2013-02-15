@@ -65,11 +65,15 @@ do
 done	
 
 #Decrypt backup
-openssl smime -decrypt -in $backupfile -binary -inform DEM -inkey $keypath -out "$BACKUP_DEST_DIR/kemr_restore.gz"
-
+if [ -n "$keypath" ]; then
+    openssl smime -decrypt -in $backupfile -binary -inform DEM -inkey $keypath -out "$BACKUP_DEST_DIR/kemr_restore.gz"
+else
+    mv $backupfile $BACKUP_DEST_DIR/kemr_restore.gz
+fi
 # Restore the database
 echo "$BACKUP_DEST_DIR/kemr_restore"
 gunzip "$BACKUP_DEST_DIR/kemr_restore.gz"
+cd $BACKUP_DEST_DIR
 mysql -u$dbuser -p$dbpass $dbname < kemr_restore
 
 # Check restore was successful

@@ -50,5 +50,5 @@ fi
 #Encrypt dump if public key is passed as argument
 if [ -n "$keypath" ]; then
 	openssl smime -encrypt -aes256 -in $dumpfile -binary -outform DEM -out "$dumpfile-ssl" $keypath
-#	rm $dumpfile
+	rm $dumpfile
 fi
