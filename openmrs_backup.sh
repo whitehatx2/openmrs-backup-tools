@@ -42,12 +42,12 @@ else
 	dbname="openmrs"
 fi
 
-while getopts “e:” OPTION
+while getopts “e” OPTION
 do
      case $OPTION in
          e)
-             keypath=$OPTARG
-	      ;;
+             keypath=$SCRIPT_PATH/public.pem
+	      echo $keypath;;
      esac
 done	
 
