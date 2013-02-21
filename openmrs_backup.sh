@@ -51,7 +51,8 @@ do
      esac
 done	
 
-# Dump the database
+# Create backup dir and Dump the database
+mkdir $BACKUP_DEST_DIR
 $SCRIPT_PATH/db_dump.sh $dbname $dbuser $dbpass $BACKUP_DEST_DIR $keypath
 
 # Check dump was successful
